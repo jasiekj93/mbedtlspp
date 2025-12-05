@@ -18,6 +18,24 @@ Ssl::Ssl(Configuration& conf, Bio& bio)
         bioReadTimeoutWrapper);
 }
 
+Ssl::Ssl(Ssl&& other) noexcept
+{
+    mbedtls_ssl_init(&ssl);
+    ssl = other.ssl;
+    mbedtls_ssl_init(&other.ssl);
+}
+
+Ssl& Ssl::operator=(Ssl&& other) noexcept
+{
+    if (this != &other)
+    {
+        mbedtls_ssl_free(&ssl);
+        ssl = other.ssl;
+        mbedtls_ssl_init(&other.ssl);
+    }
+    return *this;
+}
+
 Ssl::~Ssl()
 {
     mbedtls_ssl_free(&ssl);

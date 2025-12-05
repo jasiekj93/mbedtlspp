@@ -25,6 +25,8 @@ namespace mbedtlspp
         int write(etl::span<const unsigned char>);
         int read(etl::span<unsigned char>);
 
+        Ssl(Ssl&& other) noexcept;
+        Ssl& operator=(Ssl&& other) noexcept;
 
     private:
         Ssl(const Ssl&) = delete;

@@ -24,3 +24,21 @@ Crt::~Crt()
     mbedtls_x509_crt_free(&crt);
 }
 
+Crt::Crt(Crt&& other) noexcept
+{
+    mbedtls_x509_crt_init(&crt);
+    crt = other.crt;
+    mbedtls_x509_crt_init(&other.crt);
+}
+
+Crt& Crt::operator=(Crt&& other) noexcept
+{
+    if (this != &other)
+    {
+        mbedtls_x509_crt_free(&crt);
+        crt = other.crt;
+        mbedtls_x509_crt_init(&other.crt);
+    }
+    return *this;
+}
+

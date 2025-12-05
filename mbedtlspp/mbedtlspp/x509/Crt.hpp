@@ -20,6 +20,9 @@ namespace mbedtlspp::x509
 
         ~Crt();
 
+        Crt(Crt&& other) noexcept;
+        Crt& operator=(Crt&& other) noexcept;
+
         inline auto& operator()() { return crt; }
 
     protected:

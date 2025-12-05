@@ -10,6 +10,7 @@
 
 #include <mbedtlspp/x509/Crt.hpp>
 #include <mbedtlspp/drbg/Hmac.hpp>
+#include <mbedtlspp/PrivateKey.hpp>
 
 namespace mbedtlspp
 {
@@ -21,11 +22,15 @@ namespace mbedtlspp
 
         void setAuthMode(int mode);
         void setCaChain(x509::Crt&);
+        void setOwnCert(x509::Crt&, PrivateKey&);
         void setRng(drbg::Hmac&);
+        void setCiphersuites(const int* ciphersuites);
 
         inline auto& operator()() { return conf; }
 
-    
+        Configuration(Configuration&& other) noexcept;
+        Configuration& operator=(Configuration&& other) noexcept;
+
     private:
         Configuration(const Configuration&) = delete;
         Configuration& operator=(const Configuration&) = delete;
