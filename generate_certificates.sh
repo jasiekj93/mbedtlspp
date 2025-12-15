@@ -50,7 +50,8 @@ CN = localhost
 
 [v3_req]
 basicConstraints = CA:FALSE
-keyUsage = digitalSignature
+keyUsage = critical, digitalSignature, keyEncipherment, keyAgreement
+extendedKeyUsage = serverAuth
 subjectAltName = @alt_names
 
 [alt_names]

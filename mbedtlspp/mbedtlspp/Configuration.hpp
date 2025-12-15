@@ -6,6 +6,8 @@
  * @date 04-12-2025
  */
 
+#include <etl/vector.h>
+
 #include <mbedtls/ssl.h>
 
 #include <mbedtlspp/x509/Crt.hpp>
@@ -14,6 +16,8 @@
 
 namespace mbedtlspp
 {
+    using Ciphersuites = etl::ivector<int>;
+
     class Configuration
     {
     public:
@@ -24,7 +28,7 @@ namespace mbedtlspp
         void setCaChain(x509::Crt&);
         void setOwnCert(x509::Crt&, PrivateKey&);
         void setRng(drbg::Hmac&);
-        void setCiphersuites(const int ciphersuites[]);
+        bool setCiphersuites(const Ciphersuites&);
 
         inline auto& operator()() { return conf; }
 
