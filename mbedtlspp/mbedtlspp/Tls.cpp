@@ -1,4 +1,4 @@
-#include "Ssl.hpp"
+#include "Tls.hpp"
 
 using namespace mbedtlspp;
 
@@ -6,19 +6,19 @@ static int bioWriteWrapper(void *ctx, const unsigned char *buf, size_t len);
 static int bioReadWrapper(void *ctx, unsigned char *buf, size_t len);
 static int bioReadTimeoutWrapper(void *ctx, unsigned char *buf, size_t len, uint32_t timeout);
 
-Ssl::Ssl(Configuration& conf, Bio& bio)
+Tls::Tls(Configuration& conf, Bio& bio)
 {
     init(conf, bio);
 }
 
-Ssl::Ssl(Ssl&& other) noexcept
+Tls::Tls(Tls&& other) noexcept
 {
     mbedtls_ssl_init(&ssl);
     ssl = other.ssl;
     mbedtls_ssl_init(&other.ssl);
 }
 
-Ssl& Ssl::operator=(Ssl&& other) noexcept
+Tls& Tls::operator=(Tls&& other) noexcept
 {
     if (this != &other)
     {
@@ -29,32 +29,32 @@ Ssl& Ssl::operator=(Ssl&& other) noexcept
     return *this;
 }
 
-Ssl::~Ssl()
+Tls::~Tls()
 {
     mbedtls_ssl_free(&ssl);
 }
 
-int Ssl::handshake()
+int Tls::handshake()
 {
     return mbedtls_ssl_handshake(&ssl);
 }
 
-int Ssl::closeNotify()
+int Tls::closeNotify()
 {
     return mbedtls_ssl_close_notify(&ssl);
 }
 
-int Ssl::write(etl::span<const unsigned char> data)
+int Tls::write(etl::span<const unsigned char> data)
 {
     return mbedtls_ssl_write(&ssl, data.data(), data.size());
 }
 
-int Ssl::read(etl::span<unsigned char> buffer)
+int Tls::read(etl::span<unsigned char> buffer)
 {
     return mbedtls_ssl_read(&ssl, buffer.data(), buffer.size());
 }
 
-void Ssl::init(Configuration& conf, Bio& bio)
+void Tls::init(Configuration& conf, Bio& bio)
 {
     mbedtls_ssl_init(&ssl);
     auto result = mbedtls_ssl_setup(&ssl, &conf());

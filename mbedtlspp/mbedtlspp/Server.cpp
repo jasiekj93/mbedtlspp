@@ -14,8 +14,7 @@ Server::Server(Bio& bio, x509::Crt& certificate, PrivateKey& privateKey, const C
     configuration.setCiphersuites(ciphersuites);
     configuration.setOwnCert(certificate, privateKey);
     configuration.setRng(drbg);
-    // Enforce TLS 1.2 only
-    configuration.setTlsVersion(MBEDTLS_SSL_MAJOR_VERSION_3, MBEDTLS_SSL_MINOR_VERSION_3);
+    configuration.setVersion(Configuration::Version::TLS1_2);
 
     init(configuration, bio);
 }

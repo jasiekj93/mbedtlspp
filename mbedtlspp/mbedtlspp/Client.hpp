@@ -1,21 +1,21 @@
 #pragma once
 
-#include <mbedtlspp/Ssl.hpp>
+#include <mbedtlspp/Tls.hpp>
 
 namespace mbedtlspp
 {
-    class Client : public Ssl
+    class Client : public Tls
     {
     public:
         static const etl::vector<int, 2> DEFAULT_CIPHERSUITE;  
 
         Client(Bio&, x509::Crt&, const Ciphersuites& = DEFAULT_CIPHERSUITE);
 
-        using Ssl::handshake;
-        using Ssl::closeNotify;
+        using Tls::handshake;
+        using Tls::closeNotify;
 
-        using Ssl::read;
-        using Ssl::write;
+        using Tls::read;
+        using Tls::write;
 
     private:
         Client(const Client&) = delete;

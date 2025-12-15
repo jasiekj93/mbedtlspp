@@ -21,6 +21,14 @@ namespace mbedtlspp
     class Configuration
     {
     public:
+        enum class Version
+        {
+            SSL3_0    = MBEDTLS_SSL_MINOR_VERSION_0,
+            TLS1_0    = MBEDTLS_SSL_MINOR_VERSION_1,
+            TLS1_1    = MBEDTLS_SSL_MINOR_VERSION_2,
+            TLS1_2    = MBEDTLS_SSL_MINOR_VERSION_3,
+        };
+
         Configuration(int protocol, int transport, int preset);
         ~Configuration();
 
@@ -29,8 +37,7 @@ namespace mbedtlspp
         void setOwnCert(x509::Crt&, PrivateKey&);
         void setRng(drbg::Hmac&);
         bool setCiphersuites(const Ciphersuites&);
-        void setTlsVersion(int major, int minor);
-        void setTlsVersionRange(int minMajor, int minMinor, int maxMajor, int maxMinor);
+        void setVersion(Version);
 
         inline auto& operator()() { return conf; }
 

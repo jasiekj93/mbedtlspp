@@ -7,7 +7,7 @@
 # Uncomment if program platform must be diffrent than the solution
 # PLATFORM := Pc32
 # Uncomment if program support only specific platforms and otherwise must be skipped
-# supported_platforms := Pc32 Pc64 ArmA7-Linux ArmA9-Linux Rpi64
+supported_platforms := Pc32 Pc64 ArmA7-Linux ArmA9-Linux Rpi64
 
 # Target
 target := test-client

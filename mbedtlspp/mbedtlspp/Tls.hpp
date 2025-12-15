@@ -1,7 +1,7 @@
 #pragma once
 
 /**
- * @file Ssl.hpp
+ * @file Tls.hpp
  * @author Adrian Szczepanski
  * @date 04-12-2025
  */
@@ -13,11 +13,11 @@
 
 namespace mbedtlspp
 {
-    class Ssl
+    class Tls
     {
     public:
-        Ssl(Configuration&, Bio&);
-        virtual ~Ssl();
+        Tls(Configuration&, Bio&);
+        virtual ~Tls();
 
         int handshake();
         int closeNotify();
@@ -25,18 +25,18 @@ namespace mbedtlspp
         int write(etl::span<const unsigned char>);
         int read(etl::span<unsigned char>);
 
-        Ssl(Ssl&& other) noexcept;
-        Ssl& operator=(Ssl&& other) noexcept;
+        Tls(Tls&& other) noexcept;
+        Tls& operator=(Tls&& other) noexcept;
 
     protected:
-        Ssl() = default;
+        Tls() = default;
 
         void init(Configuration&, Bio&);
 
 
     private:
-        Ssl(const Ssl&) = delete;
-        Ssl& operator=(const Ssl&) = delete;
+        Tls(const Tls&) = delete;
+        Tls& operator=(const Tls&) = delete;
 
         mbedtls_ssl_context ssl;
     };
