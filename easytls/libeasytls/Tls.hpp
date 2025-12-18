@@ -50,6 +50,7 @@ namespace easytls
 
         mbedtls_ssl_context ssl;
         mbedtls_ssl_config config;
+        mbedtls_hmac_drbg_context drbg;
 
     private:
         Tls(const Tls&) = delete;

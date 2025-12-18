@@ -24,6 +24,11 @@ Tls::Tls(Bio& bio, etl::string_view hostname)
     
     mbedtls_ssl_init(&ssl);
     mbedtls_ssl_config_init(&config);
+    mbedtls_hmac_drbg_init(&drbg);
+
+    mbedtls_hmac_drbg_seed(&drbg, mbedtls_md_info_from_type(MBEDTLS_MD_SHA3_512),
+                                  Rng::rand, nullptr, 
+                                  nullptr, 0);
 
     mbedtls_ssl_set_bio(&ssl, &bio, 
         bioWriteWrapper, 
@@ -35,7 +40,7 @@ Tls::Tls(Bio& bio, etl::string_view hostname)
 
     mbedtls_ssl_conf_ciphersuites(&config, DEFAULT_CIPHERSUITE.data());
 
-    mbedtls_ssl_conf_rng(&config, Rng::rand, nullptr);
+    mbedtls_ssl_conf_rng(&config, mbedtls_hmac_drbg_random, &drbg);
 
     mbedtls_ssl_conf_min_tls_version(&config, MBEDTLS_SSL_VERSION_TLS1_3);
     mbedtls_ssl_conf_max_tls_version(&config, MBEDTLS_SSL_VERSION_TLS1_3);
@@ -43,6 +48,7 @@ Tls::Tls(Bio& bio, etl::string_view hostname)
 
 Tls::~Tls()
 {
+    mbedtls_hmac_drbg_free(&drbg);
     mbedtls_ssl_config_free(&config);
     mbedtls_ssl_free(&ssl);
 }
