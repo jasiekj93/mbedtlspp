@@ -99,20 +99,18 @@ int main(int argc, char* argv[])
     if (not serverKey)
         throw std::runtime_error("Failed to parse server private key. Status: " + std::to_string(PrivateKey::getParseStatus()));
     
-    auto tls = Server::tryCreate(bio, "server", serverCert.value(), serverKey.value());
+    Server tls(bio, "server", serverCert.value(), serverKey.value());
 
-    if(not tls)
-        throw std::runtime_error("Failed to create TLS server. Result: " + std::to_string(Server::getCreateResult()));
+    if(not tls.isValid())
+        throw std::runtime_error("Failed to create TLS server. Result: " + std::to_string(tls.getErrorCode()));
 
-    // auto& ssl = tls.value();
-    Server ssl(bio, "server", serverCert.value(), serverKey.value());
-    ssl.setDebug(Tls::DebugLevel::DEBUG);
+    tls.setDebug(Tls::DebugLevel::DEBUG);
 
-    doHandshake(ssl);
-    auto ret = receiveData(ssl);  
+    doHandshake(tls);
+    auto ret = receiveData(tls);  
 
     if(ret != MBEDTLS_ERR_SSL_PEER_CLOSE_NOTIFY)
-        ssl.closeNotify();
+        tls.closeNotify();
 
     std::cout << "TLS Connection closed." << std::endl;
 	return ret;

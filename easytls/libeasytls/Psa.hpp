@@ -11,12 +11,10 @@ namespace easytls
     class Psa
     {
     public:
-        static void init();
-        static inline bool isInitialized() { return initialized; }
-        static inline int getInitResult() { return initResult; }
+        static int init();
+        static inline bool isInitialized() { return (initResult == 0); }
 
     private:
-        static bool initialized;
         static int initResult;
     };
 }

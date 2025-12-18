@@ -1,5 +1,7 @@
 #include "Tls.hpp"
 #include "Debug.hpp"
+#include "Rng.hpp"
+#include "Psa.hpp"
 
 #include <mbedtls/debug.h>
 
@@ -12,67 +14,37 @@ static int bioReadTimeoutWrapper(void *ctx, unsigned char *buf, size_t len, uint
 const etl::vector<int, 2> Tls::DEFAULT_CIPHERSUITE = { MBEDTLS_TLS_RSA_WITH_AES_256_GCM_SHA384, 0 };
 
 Tls::Tls(Bio& bio, etl::string_view hostname)
+    : errorCode(0)
 {
-    setup(this);
-
-    //może być błąd
-    mbedtls_hmac_drbg_seed(&drbg,
-                           mbedtls_md_info_from_type(MBEDTLS_MD_SHA256),
-                           mbedtls_entropy_func,
-                           &entropy,
-                           nullptr,
-                           0);
+    if(not Psa::isInitialized())
+        errorCode = Psa::init();
+    
+    if(not Psa::isInitialized())
+        return;
+    
+    mbedtls_ssl_init(&ssl);
+    mbedtls_ssl_config_init(&config);
 
     mbedtls_ssl_set_bio(&ssl, &bio, 
         bioWriteWrapper, 
         bioReadWrapper, 
         bioReadTimeoutWrapper);
 
-    //moze byc blad
-    mbedtls_ssl_set_hostname(&ssl, hostname.data());
+    if(errorCode = mbedtls_ssl_set_hostname(&ssl, hostname.data()), errorCode != 0)
+        return;
+
     mbedtls_ssl_conf_ciphersuites(&config, DEFAULT_CIPHERSUITE.data());
 
-        //zmienic na globalnie, usunac drbg i entropy, dodac drbg jako global, spelniajacy rng
-    mbedtls_ssl_conf_rng(&config, mbedtls_hmac_drbg_random, &drbg);
+    mbedtls_ssl_conf_rng(&config, Rng::rand, nullptr);
 
     mbedtls_ssl_conf_min_tls_version(&config, MBEDTLS_SSL_VERSION_TLS1_3);
     mbedtls_ssl_conf_max_tls_version(&config, MBEDTLS_SSL_VERSION_TLS1_3);
 }
 
-Tls::Tls(Tls&& other)
-{
-    // teardown(this);
-    ssl = other.ssl;
-    config = other.config;
-    drbg = other.drbg;
-    entropy = other.entropy;
-    mbedtls_ssl_conf_rng(&config, mbedtls_hmac_drbg_random, &drbg);
-    mbedtls_ssl_conf_ciphersuites(&config, DEFAULT_CIPHERSUITE.data());
-    mbedtls_ssl_setup(&ssl, &config);
-
-    // teardown(&other);
-}
-
-Tls& Tls::operator=(Tls&& other)
-{
-    if (this != &other)
-    {
-        // teardown(this);
-        entropy = other.entropy;
-        drbg = other.drbg;
-        config = other.config;
-        ssl = other.ssl;
-        mbedtls_ssl_conf_rng(&config, mbedtls_hmac_drbg_random, &drbg);
-        mbedtls_ssl_setup(&ssl, &config);
-
-        // teardown(&other);
-    }
-    return *this;
-}
-
 Tls::~Tls()
 {
-    teardown(this);
+    mbedtls_ssl_config_free(&config);
+    mbedtls_ssl_free(&ssl);
 }
 
 int Tls::handshake()
@@ -99,23 +71,6 @@ void Tls::setDebug(DebugLevel level)
 {
     mbedtls_ssl_conf_dbg(&config, Debug::log, nullptr);
     mbedtls_debug_set_threshold(static_cast<int>(level));
-}
-
-
-void Tls::setup(Tls* tls)
-{    
-    mbedtls_entropy_init(&tls->entropy);   
-    mbedtls_hmac_drbg_init(&tls->drbg);
-    mbedtls_ssl_config_init(&tls->config);
-    mbedtls_ssl_init(&tls->ssl);
-}
-
-void Tls::teardown(Tls* tls)
-{
-    mbedtls_ssl_free(&tls->ssl);
-    mbedtls_ssl_config_free(&tls->config);
-    mbedtls_hmac_drbg_free(&tls->drbg);
-    mbedtls_entropy_free(&tls->entropy);
 }
 
 

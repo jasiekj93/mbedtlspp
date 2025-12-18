@@ -40,23 +40,22 @@ namespace easytls
 
         void setDebug(DebugLevel);
 
+        inline bool isValid() const { return errorCode == 0; }
+        inline auto getErrorCode() const { return errorCode; }
+
     protected:
-        static void setup(Tls*);
-        static void teardown(Tls*);
-
         Tls(Bio&, etl::string_view hostname);
-        Tls(Tls&&);
-        Tls& operator=(Tls&&);
 
+        int errorCode;
 
         mbedtls_ssl_context ssl;
         mbedtls_ssl_config config;
-        mbedtls_entropy_context entropy;
-        mbedtls_hmac_drbg_context drbg;
 
     private:
         Tls(const Tls&) = delete;
         Tls& operator=(const Tls&) = delete;
+        Tls(Tls&&) = delete;
+        Tls& operator=(Tls&&) = delete;
 
         static const etl::vector<int, 2> DEFAULT_CIPHERSUITE;  
     };

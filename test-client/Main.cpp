@@ -100,18 +100,16 @@ int main(int argc, char* argv[])
     if(not cacert)
         throw std::runtime_error("Failed to parse CA certificates. Status: " + std::to_string(x509::Certificate::getParseStatus()));
     
-    auto tls = Client::tryCreate(bio, "localhost", cacert.value());
+    Client tls(bio, "localhost", cacert.value());
 
-    if(not tls)
-        throw std::runtime_error("Failed to create TLS client. Result: " + std::to_string(Client::getCreateResult()));
+    if(not tls.isValid())
+        throw std::runtime_error("Failed to create TLS client. Result: " + std::to_string(tls.getErrorCode()));
 
-    // auto& ssl = tls.value();
-    Client ssl(bio, "localhost", cacert.value());
-    ssl.setDebug(Tls::DebugLevel::DEBUG);
+    tls.setDebug(Tls::DebugLevel::DEBUG);
 
-    doHandshake(ssl);
-    auto ret = sendMessage(ssl);
-    ssl.closeNotify();
+    doHandshake(tls);
+    auto ret = sendMessage(tls);
+    tls.closeNotify();
 
     std::cout << "TLS Connection closed." << std::endl;
     return ret;

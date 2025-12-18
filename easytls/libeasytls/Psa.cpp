@@ -4,18 +4,14 @@
 
 using namespace easytls;
 
-bool Psa::initialized = false;
-int Psa::initResult = 0;
+int Psa::initResult = -1;
 
-void Psa::init()
+int Psa::init()
 {
-    if(not initialized)
+    if(not isInitialized())
     {
-        psa_status_t status = psa_crypto_init();
-
-        if (status == PSA_SUCCESS) 
-            initialized = true;
-
-        initResult = status;
+        initResult = static_cast<int>(psa_crypto_init());
     }
+
+    return initResult;
 }

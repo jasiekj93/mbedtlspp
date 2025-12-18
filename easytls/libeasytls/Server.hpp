@@ -17,8 +17,7 @@ namespace easytls
     class Server : public Tls
     {
     public:
-        static etl::optional<Server> tryCreate(Bio&, etl::string_view hostname, x509::Certificate&, PrivateKey&);
-        static inline int getCreateResult() { return createResult; }
+        Server(Bio&, etl::string_view hostname, x509::Certificate&, PrivateKey&);
 
         using Tls::handshake;
         using Tls::closeNotify;
@@ -27,10 +26,5 @@ namespace easytls
         using Tls::write;
 
         using Tls::setDebug;
-
-        Server(Bio&, etl::string_view hostname, x509::Certificate&, PrivateKey&);
-    private:
-
-        static int createResult;
     };
 }
