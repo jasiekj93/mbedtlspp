@@ -20,6 +20,7 @@ external_dir := $(project_dir)/external
 # Sources 
 cxx_sources :=  \
 $(wildcard libeasytls/*.cpp) \
+$(wildcard libeasytls/x509/*.cpp) \
 
 # c_sources := \
 

@@ -11,30 +11,12 @@
 
 #include <unistd.h>
 
-#include <mbedtlspp/Server.hpp>
-#include <psa/crypto.h>
+#include <libeasytls/Server.hpp>
 
 #include "SocketBio.hpp"
+#include "CoutDebug.hpp"
 
-using namespace mbedtlspp;
-
-extern "C" int mbedtls_hardware_poll(void *data,
-                          unsigned char *output, size_t len, size_t *olen)
-{
-    // Simple hardware poll implementation using /dev/urandom
-    (void)data; // Unused parameter
-    std::ifstream urandom("/dev/urandom", std::ios::in | std::ios::binary);
-    if (!urandom) {
-        return MBEDTLS_ERR_ENTROPY_SOURCE_FAILED;
-    }
-
-    urandom.read(reinterpret_cast<char*>(output), len);
-    if (urandom.gcount() != static_cast<std::streamsize>(len)) {
-        return MBEDTLS_ERR_ENTROPY_SOURCE_FAILED;
-    }
-    *olen = len;
-    return 0;
-}
+using namespace easytls;
 
 std::string readFile(const std::string& filename) 
 {
@@ -101,28 +83,30 @@ int receiveData(Server& ssl)
 
 int main(int argc, char* argv[])
 {
-    // Initialize PSA crypto for TLS 1.3
-    psa_status_t psa_status = psa_crypto_init();
-    if (psa_status != PSA_SUCCESS) {
-        std::cerr << "PSA crypto initialization failed: " << psa_status << std::endl;
-        return 1;
-    }
-
     SocketBio bio("/tmp/mbedtls-test.sock", true);
+    auto debug = std::make_shared<CoutDebug>();
+    Debug::setGlobal(debug);
     
     auto serverCertData = readFile("test-server/server-cert.pem");
-    auto serverCert = x509::Crt::parse({ reinterpret_cast<const unsigned char*>(serverCertData.c_str()), serverCertData.length() + 1 });
+    auto serverCert = x509::Certificate::parse({ reinterpret_cast<const unsigned char*>(serverCertData.c_str()), serverCertData.length() + 1 });
     
     auto serverKeyData = readFile("test-server/server-key.pem");
     auto serverKey = PrivateKey::parse({ reinterpret_cast<const unsigned char*>(serverKeyData.c_str()), serverKeyData.length() + 1 });
 
     if (not serverCert)
-        throw std::runtime_error("Failed to parse server certificate");
+        throw std::runtime_error("Failed to parse server certificate. Status: " + std::to_string(x509::Certificate::getParseStatus()));
     
     if (not serverKey)
-        throw std::runtime_error("Failed to parse server private key");
+        throw std::runtime_error("Failed to parse server private key. Status: " + std::to_string(PrivateKey::getParseStatus()));
     
-    Server ssl(bio, serverCert.value(), serverKey.value());
+    auto tls = Server::tryCreate(bio, "server", serverCert.value(), serverKey.value());
+
+    if(not tls)
+        throw std::runtime_error("Failed to create TLS server. Result: " + std::to_string(Server::getCreateResult()));
+
+    // auto& ssl = tls.value();
+    Server ssl(bio, "server", serverCert.value(), serverKey.value());
+    ssl.setDebug(Tls::DebugLevel::DEBUG);
 
     doHandshake(ssl);
     auto ret = receiveData(ssl);  

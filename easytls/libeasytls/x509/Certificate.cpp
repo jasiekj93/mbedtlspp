@@ -3,14 +3,14 @@
 using namespace easytls;
 using namespace easytls::x509;
 
-Certificate::Status Certificate::parseStatus = Certificate::Status::OK;
+int Certificate::parseStatus = 0;
 
 etl::optional<Certificate> Certificate::parse(etl::span<const unsigned char> buf)
 {
     Certificate certificate;
-    parseStatus = static_cast<Status>(mbedtls_x509_crt_parse(&certificate.crt, buf.data(), buf.size()));
+    parseStatus = mbedtls_x509_crt_parse(&certificate.crt, buf.data(), buf.size());
 
-    if (parseStatus == Status::OK)
+    if (parseStatus == 0)
         return etl::optional<Certificate>(etl::move(certificate));
     else
         return etl::nullopt;

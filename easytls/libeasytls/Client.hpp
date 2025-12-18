@@ -29,8 +29,8 @@ namespace easytls
 
         using Tls::setDebug;
 
-    private:
         Client(Bio&, etl::string_view hostname, x509::Certificate&);
+    private:
 
         static int createResult;
     };

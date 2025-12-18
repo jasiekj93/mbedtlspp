@@ -3,6 +3,8 @@
 
 using namespace easytls;
 
+int Server::createResult = 0;
+
 etl::optional<Server> easytls::Server::tryCreate(Bio& bio, etl::string_view hostname, x509::Certificate& certificate, PrivateKey& privateKey)
 {
     if(not Psa::isInitialized())
@@ -22,7 +24,7 @@ etl::optional<Server> easytls::Server::tryCreate(Bio& bio, etl::string_view host
         return etl::nullopt;
 }
 
-Server::Server(Bio& bio, etl::string_view hostname, x509::Certificate& certificate, PrivateKey& privateKey)
+Server::Server(Bio &bio, etl::string_view hostname, x509::Certificate &certificate, PrivateKey &privateKey)
     : Tls(bio, hostname)
 {
     createResult = mbedtls_ssl_config_defaults(&config, 

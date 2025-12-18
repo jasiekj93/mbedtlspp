@@ -6,9 +6,9 @@
  * @date 12-12-2025
  */
 
-#include <mbedtlspp/Bio.hpp>
+#include <libeasytls/Bio.hpp>
 
-class SocketBio : public mbedtlspp::Bio
+class SocketBio : public easytls::Bio
 {
 public:
     SocketBio(const std::string& path, bool isServer);

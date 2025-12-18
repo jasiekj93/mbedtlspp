@@ -41,7 +41,7 @@ required_internal_libraries = \
 # libraries
 required_libraries = \
 mbedtls \
-mbedtlspp \
+easytls \
 
 # external libraries
 #	e.g. if include flag is '-I$(external_dir)/libFoo'

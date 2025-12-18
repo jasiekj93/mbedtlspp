@@ -41,18 +41,31 @@ Tls::Tls(Bio& bio, etl::string_view hostname)
 
 Tls::Tls(Tls&& other)
 {
-    setup(this);
+    // teardown(this);
     ssl = other.ssl;
-    setup(&other);
+    config = other.config;
+    drbg = other.drbg;
+    entropy = other.entropy;
+    mbedtls_ssl_conf_rng(&config, mbedtls_hmac_drbg_random, &drbg);
+    mbedtls_ssl_conf_ciphersuites(&config, DEFAULT_CIPHERSUITE.data());
+    mbedtls_ssl_setup(&ssl, &config);
+
+    // teardown(&other);
 }
 
 Tls& Tls::operator=(Tls&& other)
 {
     if (this != &other)
     {
-        setup(this);
+        // teardown(this);
+        entropy = other.entropy;
+        drbg = other.drbg;
+        config = other.config;
         ssl = other.ssl;
-        setup(&other);
+        mbedtls_ssl_conf_rng(&config, mbedtls_hmac_drbg_random, &drbg);
+        mbedtls_ssl_setup(&ssl, &config);
+
+        // teardown(&other);
     }
     return *this;
 }

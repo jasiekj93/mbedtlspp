@@ -15,29 +15,12 @@
 #include <sys/un.h>
 #include <errno.h>
 
-#include <mbedtlspp/Client.hpp>
+#include <libeasytls/Client.hpp>
 
 #include "SocketBio.hpp"
+#include "CoutDebug.hpp"
 
-using namespace mbedtlspp;
-
-extern "C" int mbedtls_hardware_poll(void *data,
-                          unsigned char *output, size_t len, size_t *olen)
-{
-    // Simple hardware poll implementation using /dev/urandom
-    (void)data; // Unused parameter
-    std::ifstream urandom("/dev/urandom", std::ios::in | std::ios::binary);
-    if (!urandom) {
-        return MBEDTLS_ERR_ENTROPY_SOURCE_FAILED;
-    }
-
-    urandom.read(reinterpret_cast<char*>(output), len);
-    if (urandom.gcount() != static_cast<std::streamsize>(len)) {
-        return MBEDTLS_ERR_ENTROPY_SOURCE_FAILED;
-    }
-    *olen = len;
-    return 0;
-}
+using namespace easytls;
 
 // Function to read file contents
 std::string readFile(const std::string& filename) {
@@ -107,21 +90,24 @@ int sendMessage(Client& ssl)
 
 int main(int argc, char* argv[])
 {
-    // Initialize PSA crypto for TLS 1.3
-    psa_status_t psa_status = psa_crypto_init();
-    if (psa_status != PSA_SUCCESS) {
-        throw std::runtime_error("PSA crypto initialization failed");
-    }
-    
     SocketBio bio("/tmp/mbedtls-test.sock", false);
+    auto debug = std::make_shared<CoutDebug>();
+    Debug::setGlobal(debug);
 
     auto caCertData = readFile("test-client/ca-cert.pem");
-    auto cacert = x509::Crt::parse({ reinterpret_cast<const unsigned char*>(caCertData.c_str()), caCertData.length() + 1 });
+    auto cacert = x509::Certificate::parse({ reinterpret_cast<const unsigned char*>(caCertData.c_str()), caCertData.length() + 1 });
 
     if(not cacert)
-        throw std::runtime_error("Failed to parse CA certificates");
+        throw std::runtime_error("Failed to parse CA certificates. Status: " + std::to_string(x509::Certificate::getParseStatus()));
     
-    Client ssl(bio, cacert.value());
+    auto tls = Client::tryCreate(bio, "localhost", cacert.value());
+
+    if(not tls)
+        throw std::runtime_error("Failed to create TLS client. Result: " + std::to_string(Client::getCreateResult()));
+
+    // auto& ssl = tls.value();
+    Client ssl(bio, "localhost", cacert.value());
+    ssl.setDebug(Tls::DebugLevel::DEBUG);
 
     doHandshake(ssl);
     auto ret = sendMessage(ssl);

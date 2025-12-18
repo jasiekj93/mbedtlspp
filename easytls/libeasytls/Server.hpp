@@ -28,8 +28,8 @@ namespace easytls
 
         using Tls::setDebug;
 
-    private:
         Server(Bio&, etl::string_view hostname, x509::Certificate&, PrivateKey&);
+    private:
 
         static int createResult;
     };
