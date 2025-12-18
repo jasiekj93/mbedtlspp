@@ -54,6 +54,7 @@ int Tls::read(etl::span<unsigned char> buffer)
     return mbedtls_ssl_read(&ssl, buffer.data(), buffer.size());
 }
 
+
 void Tls::init(Configuration& conf, Bio& bio)
 {
     mbedtls_ssl_init(&ssl);

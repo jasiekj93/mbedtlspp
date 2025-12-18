@@ -37,6 +37,7 @@ test-client \
 library_names = \
 mbedtls \
 mbedtlspp \
+easytls \
 
 # optimalization flags
 # export debug_optimalization := 
